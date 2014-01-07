@@ -4,47 +4,45 @@ require 'sinatra'
 require 'securerandom'
 require "json"
 
-
   CONFIG = {
     :node_list => ["localhost:8091"],
     :pool_size => 3
   }
 
-  def connection(bucket)
-    @servers ||= {}
-    @servers[bucket] ||= begin
+def connection(bucket)
+  @servers ||= {} 
+  @servers[bucket] ||= begin
     size = CONFIG[:pool_size]
     params = CONFIG.merge(:bucket => bucket)
     Couchbase::ConnectionPool.new(size, params)
-    end
   end
+end
 
 get "/user/:id" do |user_id|
     client = connection("sessions")
-    user = client.get(user_id, :quiet => true)
+    session_id = client.get(user_id, :quiet => true)
 
-    if user.nil?
-    	randomToken = SecureRandom.urlsafe_base64(16) + user_id
+    if session_id.nil?
+    	session_id = SecureRandom.urlsafe_base64(16) + user_id
       thirty_minute_sessions = 60 * 30
-    	client.set(user_id,randomToken, :ttl => thirty_minute_sessions)
+    	client.set(user_id,session_id, :ttl => thirty_minute_sessions)
     end
 
     response = client.get(user_id, :quiet => true)
-    status = 200
+    response.body = client.get(user_id,:quiet => true)
+    response.status = 200
     body = response
 end
 
 post "/user" do 
   user_id = params[:user_id]
-  puts "USER ID" + user_id
   couchbase = connection("users")
   user = couchbase.get(user_id, :quiet => true) 
+  
   if user.nil?
    current_utc = Time.now.utc
    user = User.new(user_id,current_utc,current_utc,nil)
-   puts user.to_json
-   user_jsn = user.to_json
-   couchbase.set(user_id,user_jsn)
+   couchbase.set(user_id,user.to_json)
    response.body = couchbase.get(user_id, :quiet => true)
    response.status = 201
   else
@@ -53,7 +51,7 @@ post "/user" do
   end
 end
 
-class JSONable
+class JsonSerializer
     def to_json
         hash = {}
         self.instance_variables.each do |var|
@@ -68,7 +66,7 @@ class JSONable
     end
 end
 
-class User < JSONable
+class User < JsonSerializer
 
 def initialize(user_name, join_date,last_active,session_id)
     @user_name = user_name
