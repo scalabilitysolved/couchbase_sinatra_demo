@@ -44,21 +44,35 @@ get "/user/:id" do |user_id|
   end
 end
 
-post "/sessions" do
+get "/session/:user_id" do |user_id|
+  client = @couchbase.connection("sessions")
+  session_id = client.get(user_id, :quiet => true)
+
+  if session_id.nil?
+    response.body = "#{user_id} does not have valid session id"
+    response.status = 404
+  else
+    response.body = session_id
+    response.status = 200
+  end
+end
+
+post "/session" do
     user_id = params[:user_id] 
-    client = connection("sessions")
+    client = @couchbase.connection("sessions")
     session_id = client.get(user_id, :quiet => true)
 
     if session_id.nil?
       session_id = SecureRandom.urlsafe_base64(16) + user_id
       thirty_minute_sessions = 60 * 30
       client.set(user_id,session_id, :ttl => thirty_minute_sessions)
-    end
-
-    response = client.get(user_id, :quiet => true)
-    response.body = client.get(user_id,:quiet => true)
+      client.get(user_id,:quiet => true)
+      response.body = session_id
+      response.status = 201
+    else
+    response.body = session_id
     response.status = 200
-    body = response
+    end  
 end
 
 run! if __FILE__ == $0
