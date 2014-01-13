@@ -1,1 +1,4 @@
 
+I, [2014-01-13T21:36:08.036406 #46792]  INFO -- : reaped #<Process::Status: pid 46794 exit 0> worker=0
+I, [2014-01-13T21:36:08.037997 #46792]  INFO -- : reaped #<Process::Status: pid 46796 exit 0> worker=1
+I, [2014-01-13T21:36:08.038236 #46792]  INFO -- : master complete
