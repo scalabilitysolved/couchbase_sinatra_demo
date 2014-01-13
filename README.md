@@ -20,17 +20,18 @@ You'll need to change the following line in the nginx.conf to point to your app 
 5. Go to the root of the cloned repo and run the following command 'unicorn -c unicorn/unicorn.rb -E development'
 
 You can create a user in the demo app with:
-
+```
 curl -XPOST -d 'user_id=user_id' http://localhost/user
-
+```
 Retreive a specific user with:
-
+```
 curl http://localhost/user/user_id
-
+```
 Create a session for a user:
-
+```
 curl -XPOST -d 'user_id=user_id' http://localhost/session
-
+```
 Retreive current session
-
+```
 curl http://localhost/session/user_id
+```
