@@ -20,8 +20,7 @@ post "/user" do
   user = client.get(user_id, :quiet => true) 
   
   if user.nil?
-   current_utc = Time.now.utc
-   user = User.new(user_id,current_utc,current_utc)
+   user = User.new(user_id)
    client.set(user_id,user.to_json)
    response.body = client.get(user_id, :quiet => true)
    response.status = 201
@@ -39,6 +38,7 @@ get "/user/:id" do |user_id|
     response.body = "#{user_id} is not a valid user"
     response.status = 404
   else
+    user = client.get(user_id,:quiet => true)
     response.body = user
     response.status = 200
   end

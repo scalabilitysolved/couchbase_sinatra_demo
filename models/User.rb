@@ -1,15 +1,15 @@
 require 'securerandom'
 class User < JsonSerializer
 
-def initialize(user_name, join_date,last_active)
+def initialize(user_name)
     @user_name = user_name
-    @join_date = join_date
-    @last_active = last_active
-    @session_id = generate_session_id
-  end
+    current_utc = Time.now.utc
+    @join_date = current_utc
+    @last_active = current_utc
+end
 
-def generate_session_id
-    SecureRandom.urlsafe_base64(16) + @user_name	
+def update_last_active
+    @last_active = Time.now.utc
 end
 
 end
